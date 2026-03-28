@@ -774,16 +774,16 @@ const PAL = [
   '#86efac', // ライトグリーン
   '#c084fc', // 薄紫2
 ];
-const DJ = ['\u65e5','\u6708','\u706b','\u6c34','\u6728','\u91d1','\u571f'];
+const DJ = ['日','月','火','水','木','金','土'];
 const HOL = {
-  '2026-01-01':'\u5143\u65e5','2026-01-12':'\u6210\u4eba\u306e\u65e5',
-  '2026-02-11':'\u5efa\u56fd\u8a18\u5ff5\u65e5','2026-02-23':'\u5929\u7687\u8a95\u751f\u65e5',
-  '2026-03-20':'\u6625\u5206\u306e\u65e5','2026-04-29':'\u662d\u548c\u306e\u65e5',
-  '2026-05-03':'\u61b2\u6cd5\u8a18\u5ff5\u65e5','2026-05-04':'\u307f\u3069\u308a\u306e\u65e5',
-  '2026-05-05':'\u3053\u3069\u3082\u306e\u65e5','2026-07-20':'\u6d77\u306e\u65e5',
-  '2026-08-11':'\u5c71\u306e\u65e5','2026-09-21':'\u656c\u8001\u306e\u65e5',
-  '2026-09-23':'\u79cb\u5206\u306e\u65e5','2026-10-12':'\u30b9\u30dd\u30fc\u30c4\u306e\u65e5',
-  '2026-11-03':'\u6587\u5316\u306e\u65e5','2026-11-23':'\u52e4\u52b4\u611f\u8b1d\u306e\u65e5'
+  '2026-01-01':'元日','2026-01-12':'成人の日',
+  '2026-02-11':'建国記念日','2026-02-23':'天皇誕生日',
+  '2026-03-20':'春分の日','2026-04-29':'昭和の日',
+  '2026-05-03':'憲法記念日','2026-05-04':'みどりの日',
+  '2026-05-05':'こどもの日','2026-07-20':'海の日',
+  '2026-08-11':'山の日','2026-09-21':'敬老の日',
+  '2026-09-23':'秋分の日','2026-10-12':'スポーツの日',
+  '2026-11-03':'文化の日','2026-11-23':'勤労感謝の日'
 };
 
 let selDate = new Date(); selDate.setHours(0,0,0,0);
@@ -850,8 +850,8 @@ function renderSchPage(){
   var d=selDate, k=dk(d);
   var today=new Date(); today.setHours(0,0,0,0);
   var diff=(d.getTime()-today.getTime())/86400000;
-  document.getElementById('dateBig').textContent = d.getFullYear()+'\u5e74'+( d.getMonth()+1)+'\u6708'+d.getDate()+'\u65e5\uff08'+DJ[d.getDay()]+'\uff09';
-  document.getElementById('dateSmall').textContent = diff===0?'\u4eca\u65e5':diff===-1?'\u6628\u65e5':diff===1?'\u660e\u65e5':'';
+  document.getElementById('dateBig').textContent = d.getFullYear()+'年'+( d.getMonth()+1)+'月'+d.getDate()+'日（'+DJ[d.getDay()]+'）';
+  document.getElementById('dateSmall').textContent = diff===0?'今日':diff===-1?'昨日':diff===1?'明日':'';
   document.getElementById('schSub').textContent = k;
   document.getElementById('cdateTxt').textContent = (d.getMonth()+1)+'/'+d.getDate()+' '+DJ[d.getDay()];
   drawChart(); drawLegend();
@@ -923,7 +923,7 @@ function drawChart(){
       txt.setAttribute('fill','rgba(255,255,255,0.9)');
       txt.setAttribute('font-family','Noto Sans JP, sans-serif');
       txt.setAttribute('font-weight','700');txt.setAttribute('pointer-events','none');
-      var lbl=(s.name==='\u52c9\u5f37'&&s.studySubj)?s.studySubj:s.name;
+      var lbl=(s.name==='勉強'&&s.studySubj)?s.studySubj:s.name;
       txt.textContent=lbl.length>4?lbl.slice(0,4):lbl;
       g.appendChild(txt);
     }
@@ -957,14 +957,14 @@ function drawLegend(){
   var el=document.getElementById('legEl');
   var k=dk(selDate), list=schData[k]||[];
   if(!list.length){
-    el.innerHTML='<div class="empty"><div class="ei">📅</div>\u4e88\u5b9a\u304c\u3042\u308a\u307e\u305b\u3093<br>＋\u30dc\u30bf\u30f3\u3067\u8ffd\u52a0\u3057\u3066\u304f\u3060\u3055\u3044</div>';
+    el.innerHTML='<div class="empty"><div class="ei">📅</div>予定がありません<br>＋ボタンで追加してください</div>';
     return;
   }
   el.innerHTML='';
   for(var i=0;i<list.length;i++){
     var s=list[i];
     var item=document.createElement('div'); item.className='legitem';
-    var subj=(s.name==='\u52c9\u5f37'&&s.studySubj)?'<span class="lbadge study">'+s.studySubj+'</span>':'';
+    var subj=(s.name==='勉強'&&s.studySubj)?'<span class="lbadge study">'+s.studySubj+'</span>':'';
     var cal=s.showCal?'<span class="lbadge">📅</span>':'';
     item.innerHTML='<div class="ldot" style="background:'+s.color+'"></div><div class="lname">'+s.name+' '+subj+'</div>'+cal+'<div class="ltime">'+s.start+'〜'+s.end+'</div><button class="ldel" onclick="delSch(\''+k+'\','+i+')">✕</button>';
     el.appendChild(item);
@@ -992,8 +992,8 @@ function openAddSch(prefill){
 function sn(n){ document.getElementById('schName').value=n; onSchNameChange(); }
 function onSchNameChange(){
   var v=document.getElementById('schName').value;
-  document.getElementById('studySubjFg').style.display=(v==='\u52c9\u5f37')?'block':'none';
-  if(v==='\u52c9\u5f37') renderSubjList();
+  document.getElementById('studySubjFg').style.display=(v==='勉強')?'block':'none';
+  if(v==='勉強') renderSubjList();
 }
 function renderSubjList(){
   var el=document.getElementById('subjList'); el.innerHTML='';
@@ -1019,8 +1019,8 @@ function saveSch(){
   var name=document.getElementById('schName').value.trim();
   var start=document.getElementById('schS').value;
   var end=document.getElementById('schE').value;
-  if(!name||!start||!end){ alert('\u5168\u9805\u76ee\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044'); return; }
-  var isStudy=(name==='\u52c9\u5f37');
+  if(!name||!start||!end){ alert('全項目を入力してください'); return; }
+  var isStudy=(name==='勉強');
   var k=dk(selDate);
   if(!schData[k]) schData[k]=[];
   schData[k].push({name:name,start:start,end:end,color:schSC,showCal:gton('togCal'),studySubj:isStudy?getSelSubj():''});
@@ -1034,7 +1034,7 @@ function saveSch(){
 function openTPicker(){
   var list=document.getElementById('tPickList'); list.innerHTML='';
   if(!schTmpls.length){
-    list.innerHTML='<div class="empty">\u4e88\u5b9a\u30c6\u30f3\u30d7\u30ec\u30fc\u30c8\u304c\u3042\u308a\u307e\u305b\u3093</div>';
+    list.innerHTML='<div class="empty">予定テンプレートがありません</div>';
   } else {
     for(var i=0;i<schTmpls.length;i++){
       var t=schTmpls[i];
@@ -1058,7 +1058,7 @@ function useTmpl(i){
 function openNewT(kind, editIdx){
   editTKind=kind||'sch'; editTIdx=(editIdx!=null)?editIdx:null;
   document.getElementById('tKind').value=editTKind;
-  document.getElementById('newTTitle').textContent=(editIdx!=null)?'\u30c6\u30f3\u30d7\u30ec\u30fc\u30c8\u7de8\u96c6':'\u30c6\u30f3\u30d7\u30ec\u30fc\u30c8\u4f5c\u6210';
+  document.getElementById('newTTitle').textContent=(editIdx!=null)?'テンプレート編集':'テンプレート作成';
   onTKindChange();
   if(editIdx!=null){
     var t=(editTKind==='sch')?schTmpls[editIdx]:studyTmpls[editIdx];
@@ -1081,7 +1081,7 @@ function onTKindChange(){
 function saveT(){
   var kind=document.getElementById('tKind').value;
   var name=document.getElementById('tName').value.trim();
-  if(!name){ alert('\u540d\u524d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044'); return; }
+  if(!name){ alert('名前を入力してください'); return; }
   if(kind==='sch'){
     var entry={name:name,start:document.getElementById('tStart').value,end:document.getElementById('tEnd').value,color:tmplSC};
     if(editTIdx!=null) schTmpls[editTIdx]=entry; else schTmpls.push(entry);
@@ -1092,25 +1092,25 @@ function saveT(){
   save(); cm('ovNewT'); renderTmpls();
 }
 function delT(kind,i){
-  if(!confirm('\u524a\u9664\u3057\u307e\u3059\u304b\uff1f')) return;
+  if(!confirm('削除しますか？')) return;
   if(kind==='sch') schTmpls.splice(i,1); else studyTmpls.splice(i,1);
   save(); renderTmpls();
 }
 function renderTmpls(){
   var sl=document.getElementById('schTList'), st=document.getElementById('studyTList');
   sl.innerHTML=''; st.innerHTML='';
-  if(!schTmpls.length) sl.innerHTML='<div class="empty">\u4e88\u5b9a\u30c6\u30f3\u30d7\u30ec\u30fc\u30c8\u304c\u3042\u308a\u307e\u305b\u3093</div>';
+  if(!schTmpls.length) sl.innerHTML='<div class="empty">予定テンプレートがありません</div>';
   else for(var i=0;i<schTmpls.length;i++){
     var t=schTmpls[i], item=document.createElement('div'); item.className='titem';
-    item.innerHTML='<div class="tclr" style="background:'+t.color+'"></div><div class="tinfo"><div class="tname">'+t.name+'</div><div class="ttime">'+t.start+'〜'+t.end+'</div></div><div class="tact"><button class="btn sm" onclick="openNewT(\'sch\','+i+')">\u7de8\u96c6</button><button class="btn sm" onclick="useTmplDirect('+i+')">\u4eca\u65e5\u8ffd\u52a0</button><button class="btn sm danger" onclick="delT(\'sch\','+i+')">\u524a\u9664</button></div>';
+    item.innerHTML='<div class="tclr" style="background:'+t.color+'"></div><div class="tinfo"><div class="tname">'+t.name+'</div><div class="ttime">'+t.start+'〜'+t.end+'</div></div><div class="tact"><button class="btn sm" onclick="openNewT(\'sch\','+i+')">編集</button><button class="btn sm" onclick="useTmplDirect('+i+')">今日追加</button><button class="btn sm danger" onclick="delT(\'sch\','+i+')">削除</button></div>';
     sl.appendChild(item);
   }
-  if(!studyTmpls.length) st.innerHTML='<div class="empty">\u52c9\u5f37\u79d1\u76ee\u304c\u3042\u308a\u307e\u305b\u3093</div>';
+  if(!studyTmpls.length) st.innerHTML='<div class="empty">勉強科目がありません</div>';
   else for(var i=0;i<studyTmpls.length;i++){
     var t=studyTmpls[i], item=document.createElement('div'); item.className='titem';
-    var gs=t.goalH?'\u76ee\u6a19 '+t.goalH+'h':'';
-    var gd=t.goalDate?' / '+t.goalDate+'\u307e\u3067':'';
-    item.innerHTML='<div class="tclr" style="background:'+(t.color||'#9a4df0')+'"></div><div class="tinfo"><div class="tname">'+t.name+'</div><div class="ttime">'+gs+gd+'</div></div><div class="tact"><button class="btn sm" onclick="openNewT(\'study\','+i+')">\u7de8\u96c6</button><button class="btn sm danger" onclick="delT(\'study\','+i+')">\u524a\u9664</button></div>';
+    var gs=t.goalH?'目標 '+t.goalH+'h':'';
+    var gd=t.goalDate?' / '+t.goalDate+'まで':'';
+    item.innerHTML='<div class="tclr" style="background:'+(t.color||'#9a4df0')+'"></div><div class="tinfo"><div class="tname">'+t.name+'</div><div class="ttime">'+gs+gd+'</div></div><div class="tact"><button class="btn sm" onclick="openNewT(\'study\','+i+')">編集</button><button class="btn sm danger" onclick="delT(\'study\','+i+')">削除</button></div>';
     st.appendChild(item);
   }
 }
@@ -1127,7 +1127,7 @@ function useTmplDirect(i){
 function shiftCalM(d){ calM+=d; if(calM<0){calM=11;calY--;} if(calM>11){calM=0;calY++;} renderCal(); }
 
 function renderCal(){
-  document.getElementById('calTitle').textContent = calY+'\u5e74 '+(calM+1)+'\u6708';
+  document.getElementById('calTitle').textContent = calY+'年 '+(calM+1)+'月';
   var grid=document.getElementById('cgrid'); grid.innerHTML='';
   for(var i=0;i<7;i++){
     var dh=document.createElement('div'); dh.className='cdow'; dh.textContent=DJ[i]; grid.appendChild(dh);
@@ -1165,7 +1165,7 @@ function mkCell(date,om,today){
   for(var i=0;i<Math.min(schList.length,2);i++){
     var b=document.createElement('div'); b.className='cebar';
     b.style.background=schList[i].color;
-    b.textContent=(schList[i].name==='\u52c9\u5f37'&&schList[i].studySubj)?schList[i].studySubj:schList[i].name;
+    b.textContent=(schList[i].name==='勉強'&&schList[i].studySubj)?schList[i].studySubj:schList[i].name;
     evs.appendChild(b);
   }
   if(schList.length>2){
@@ -1202,11 +1202,11 @@ function gotoSch(){
 function showDayDetail(date){
   var k=dk(date), panel=document.getElementById('ddpanel');
   panel.classList.add('on');
-  document.getElementById('ddTitle').textContent=(date.getMonth()+1)+'\u6708'+date.getDate()+'\u65e5\uff08'+DJ[date.getDay()]+'\uff09';
+  document.getElementById('ddTitle').textContent=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DJ[date.getDay()]+'）';
   var list=schData[k]||[];
   var schEl=document.getElementById('ddSch');
   if(!list.length){
-    schEl.innerHTML='<div style="font-size:11px;color:var(--mut);">\u4e88\u5b9a\u306a\u3057</div>';
+    schEl.innerHTML='<div style="font-size:11px;color:var(--mut);">予定なし</div>';
   } else {
     schEl.innerHTML=list.map(function(s){
       return '<div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11px;"><div style="width:7px;height:7px;border-radius:50%;background:'+s.color+';flex-shrink:0;"></div><span style="font-weight:700;">'+s.name+(s.studySubj?' ('+s.studySubj+')':'')+'</span><span style="color:var(--mut);font-family:DM Mono,monospace;font-size:9px;">'+s.start+'〜'+s.end+'</span></div>';
@@ -1219,15 +1219,15 @@ function renderDdMeal(k){
   var meal=mealData[k]||{morning:false,night:false};
   var cost=(meal.morning?310:0)+(meal.night?580:0);
   document.getElementById('ddMeal').innerHTML=
-    '<div class="mrow"><div class="micon">🌅</div><div class="minfo"><div class="mlabel">\u671d\u3054\u306f\u3093</div><div class="mprice">¥310</div></div>'+
-    '<button style="padding:7px 16px;border-radius:20px;border:1px solid '+(meal.morning?'#f0c04d':'var(--brd)')+';background:'+(meal.morning?'#f0c04d':'none')+';color:'+(meal.morning?'#000':'var(--mut)')+';font-size:12px;font-weight:'+(meal.morning?'700':'400')+';cursor:pointer;font-family:inherit;" onclick="togMeal(\''+k+'\',\'morning\')">'+(meal.morning?'✓ \u304f\u3060\u3063\u305f':'\u672a')+' </button></div>'+
-    '<div class="mrow"><div class="micon">🌙</div><div class="minfo"><div class="mlabel">\u5915\u3054\u306f\u3093</div><div class="mprice">¥580</div></div>'+
-    '<button style="padding:7px 16px;border-radius:20px;border:1px solid '+(meal.night?'#7a4df0':'var(--brd)')+';background:'+(meal.night?'#7a4df0':'none')+';color:'+(meal.night?'#fff':'var(--mut)')+';font-size:12px;font-weight:'+(meal.night?'700':'400')+';cursor:pointer;font-family:inherit;" onclick="togMeal(\''+k+'\',\'night\')">'+(meal.night?'✓ \u304f\u3060\u3063\u305f':'\u672a')+' </button></div>'+
-    '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--brd);margin-top:4px;font-size:11px;color:var(--mut);">\u3053\u306e\u65e5\u306e\u98df\u8cbb<span style="color:#f07a4d;font-size:14px;font-weight:700;font-family:DM Mono,monospace;">¥'+cost+'</span></div>';
+    '<div class="mrow"><div class="micon">🌅</div><div class="minfo"><div class="mlabel">朝ごはん</div><div class="mprice">¥310</div></div>'+
+    '<button style="padding:7px 16px;border-radius:20px;border:1px solid '+(meal.morning?'#f0c04d':'var(--brd)')+';background:'+(meal.morning?'#f0c04d':'none')+';color:'+(meal.morning?'#000':'var(--mut)')+';font-size:12px;font-weight:'+(meal.morning?'700':'400')+';cursor:pointer;font-family:inherit;" onclick="togMeal(\''+k+'\',\'morning\')">'+(meal.morning?'✓ 食べた':'未')+'</button></div>'+
+    '<div class="mrow"><div class="micon">🌙</div><div class="minfo"><div class="mlabel">夕ごはん</div><div class="mprice">¥580</div></div>'+
+    '<button style="padding:7px 16px;border-radius:20px;border:1px solid '+(meal.night?'#7a4df0':'var(--brd)')+';background:'+(meal.night?'#7a4df0':'none')+';color:'+(meal.night?'#fff':'var(--mut)')+';font-size:12px;font-weight:'+(meal.night?'700':'400')+';cursor:pointer;font-family:inherit;" onclick="togMeal(\''+k+'\',\'night\')">'+(meal.night?'✓ 食べた':'未')+'</button></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--brd);margin-top:4px;font-size:11px;color:var(--mut);">この日の食費<span style="color:#f07a4d;font-size:14px;font-weight:700;font-family:DM Mono,monospace;">¥'+cost+'</span></div>';
 }
 function renderDdTodo(k){
   var items=todos.filter(function(t){ return t.deadline===k&&t.showCal; });
-  document.getElementById('ddTodo').innerHTML=!items.length?'<div style="font-size:11px;color:var(--mut);">\u306a\u3057</div>':
+  document.getElementById('ddTodo').innerHTML=!items.length?'<div style="font-size:11px;color:var(--mut);">なし</div>':
     items.map(function(t){ return '<div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11px;"><span style="font-size:13px;">'+(t.done?'✅':'☐')+'</span><span style="'+(t.done?'text-decoration:line-through;color:var(--mut);':'')+'">'+t.title+'</span></div>'; }).join('');
 }
 
@@ -1248,7 +1248,7 @@ function updMonthlyCost(){
   });
   var total=mc*310+nc*580;
   document.getElementById('mTotal').textContent='¥'+total.toLocaleString();
-  document.getElementById('mBreak').textContent='🌅 \u671d '+mc+'\u56de ¥'+(mc*310).toLocaleString()+'   🌙 \u5915 '+nc+'\u56de ¥'+(nc*580).toLocaleString();
+  document.getElementById('mBreak').textContent='🌅 朝 '+mc+'回 ¥'+(mc*310).toLocaleString()+'   🌙 夕 '+nc+'回 ¥'+(nc*580).toLocaleString();
 }
 
 // =========================================
@@ -1260,7 +1260,7 @@ function calcMins(subj,year,month){
     var parts=k.split('-').map(Number);
     if(parts[0]===year&&parts[1]===month){
       (schData[k]||[]).forEach(function(s){
-        if(s.name==='\u52c9\u5f37'&&(subj===null||s.studySubj===subj)) total+=mRange(s.start,s.end);
+        if(s.name==='勉強'&&(subj===null||s.studySubj===subj)) total+=mRange(s.start,s.end);
       });
     }
   });
@@ -1270,10 +1270,10 @@ function renderStudy(){
   var now=new Date(), y=now.getFullYear(), m=now.getMonth()+1;
   var total=calcMins(null,y,m);
   document.getElementById('studyMonthTotal').textContent=mhm(total);
-  document.getElementById('studyMonthSub').textContent=y+'\u5e74'+m+'\u6708';
+  document.getElementById('studyMonthSub').textContent=y+'年'+m+'月';
   var cards=document.getElementById('studyCards'); cards.innerHTML='';
   if(!studyTmpls.length){
-    cards.innerHTML='<div class="empty"><div class="ei">📚</div>\u79d1\u76ee\u304c\u767b\u9332\u3055\u308c\u3066\u3044\u307e\u305b\u3093<br>\u30c6\u30f3\u30d7\u30ec\u30da\u30fc\u30b8\u304b\u3089\u8ffd\u52a0\u3057\u3066\u304f\u3060\u3055\u3044</div>';
+    cards.innerHTML='<div class="empty"><div class="ei">📚</div>科目が登録されていません<br>テンプレページから追加してください</div>';
   } else {
     studyTmpls.forEach(function(t){
       var mins=calcMins(t.name,y,m);
@@ -1288,12 +1288,12 @@ function renderStudy(){
         if(daysLeft>0&&remain>0){
           var need=remain/daysLeft;
           var cl=need>180?'pace-ng':'pace-ok';
-          var mark=need>180?'⚠️ \u30da\u30fc\u30b9\u304c\u53b3\u3057\u3081\u3067\u3059':need>90?'📈 \u30b3\u30f3\u30b9\u30bf\u30f3\u30c8\u306b\u7d9a\u3051\u307e\u3057\u3087\u3046':'✅ \u9806\u8abf\u306a\u30da\u30fc\u30b9\u3067\u3059';
-          paceHtml='<div class="'+cl+'">📅 \u76ee\u6a19\u65e5\u307e\u3067 <strong>'+daysLeft+'\u65e5</strong> | \u6b8b\u308a <strong>'+mhm(remain)+'</strong><br>\u5fc5\u8981\u30da\u30fc\u30b9: <strong>'+mhm(Math.round(need))+'/\u65e5</strong>  '+mark+'</div>';
+          var mark=need>180?'⚠️ ペースが厳しめです':need>90?'📈 コンスタントに続けましょう':'✅ 順調なペースです';
+          paceHtml='<div class="'+cl+'">📅 目標日まで <strong>'+daysLeft+'日</strong> | 残り <strong>'+mhm(remain)+'</strong><br>必要ペース: <strong>'+mhm(Math.round(need))+'/日</strong>  '+mark+'</div>';
         } else if(remain<=0){
-          paceHtml='<div class="pace-ok">🎉 \u76ee\u6a19\u6642\u9593\u9054\u6210\uff01</div>';
+          paceHtml='<div class="pace-ok">🎉 目標時間達成！</div>';
         } else if(daysLeft<=0){
-          paceHtml='<div class="pace-ng">⚠️ \u76ee\u6a19\u65e5\u3092\u904e\u304e\u3066\u3044\u307e\u3059\u3002\u6b8b\u308a '+mhm(remain)+'</div>';
+          paceHtml='<div class="pace-ng">⚠️ 目標日を過ぎています。残り '+mhm(remain)+'</div>';
         }
       }
       card.innerHTML=
@@ -1301,7 +1301,7 @@ function renderStudy(){
           '<div style="display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:'+(t.color||'#9a4df0')+'"></div><div class="scard-name">'+t.name+'</div></div>'+
           '<div class="scard-time">'+mhm(mins)+'</div>'+
         '</div>'+
-        (goalMins?'<div class="pbar"><div class="pfill" style="width:'+pct+'%;background:'+(t.color||'#9a4df0')+'"></div></div><div class="goal-info"><span>\u76ee\u6a19: '+t.goalH+'h</span><span>'+pct+'%\u9054\u6210</span></div>':'')+
+        (goalMins?'<div class="pbar"><div class="pfill" style="width:'+pct+'%;background:'+(t.color||'#9a4df0')+'"></div></div><div class="goal-info"><span>目標: '+t.goalH+'h</span><span>'+pct+'%達成</span></div>':'')+
         paceHtml;
       cards.appendChild(card);
     });
@@ -1311,11 +1311,11 @@ function renderStudy(){
   var months=[]; var n2=new Date();
   for(var i=5;i>=0;i--){
     var dd=new Date(n2.getFullYear(),n2.getMonth()-i,1);
-    months.push({y:dd.getFullYear(),m:dd.getMonth()+1,label:(dd.getMonth()+1)+'\u6708'});
+    months.push({y:dd.getFullYear(),m:dd.getMonth()+1,label:(dd.getMonth()+1)+'月'});
   }
   var bars=months.map(function(mo){ var mins=calcMins(null,mo.y,mo.m); return {label:mo.label,h:Math.round(mins/60*10)/10}; });
   var maxH=Math.max.apply(null,bars.map(function(b){ return b.h; }).concat([1]));
-  barEl.innerHTML='<div style="font-size:10px;color:var(--mut);margin-bottom:10px;">\u6708\u5225\u52c9\u5f37\u6642\u9593\uff08\u904e\u53bb6\u30f6\u6708\uff09</div>'+
+  barEl.innerHTML='<div style="font-size:10px;color:var(--mut);margin-bottom:10px;">月別勉強時間（過去6ヶ月）</div>'+
     '<div style="display:flex;align-items:flex-end;gap:5px;height:80px;">'+
     bars.map(function(b){
       return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">'+
@@ -1330,7 +1330,7 @@ function openStudySettings(){
   var el=document.getElementById('studySetList'); el.innerHTML='';
   studyTmpls.forEach(function(t,i){
     var item=document.createElement('div'); item.className='titem';
-    item.innerHTML='<div class="tclr" style="background:'+(t.color||'#9a4df0')+'"></div><div class="tinfo"><div class="tname">'+t.name+'</div><div class="ttime">'+( t.goalH?'\u76ee\u6a19: '+t.goalH+'h':'')+( t.goalDate?' / '+t.goalDate+'\u307e\u3067':'')+'</div></div><div class="tact"><button class="btn sm" onclick="cm(\'ovStudySet\');openNewT(\'study\','+i+')">\u7de8\u96c6</button><button class="btn sm danger" onclick="delT(\'study\','+i+');openStudySettings()">\u524a\u9664</button></div>';
+    item.innerHTML='<div class="tclr" style="background:'+(t.color||'#9a4df0')+'"></div><div class="tinfo"><div class="tname">'+t.name+'</div><div class="ttime">'+( t.goalH?'目標: '+t.goalH+'h':'')+( t.goalDate?' / '+t.goalDate+'まで':'')+'</div></div><div class="tact"><button class="btn sm" onclick="cm(\'ovStudySet\');openNewT(\'study\','+i+')">編集</button><button class="btn sm danger" onclick="delT(\'study\','+i+');openStudySettings()">削除</button></div>';
     el.appendChild(item);
   });
   document.getElementById('ovStudySet').classList.add('on');
@@ -1355,9 +1355,9 @@ function renderTodo(){
     list.sort(function(a,b){ return a.deadline.localeCompare(b.deadline); });
   }
   var active=todos.filter(function(t){ return !t.done; }).length;
-  document.getElementById('todoCnt').textContent=active+'\u4ef6\u672a\u5b8c\u4e86 / \u8a08'+todos.length+'\u4ef6';
+  document.getElementById('todoCnt').textContent=active+'件未完了 / 計'+todos.length+'件';
   var el=document.getElementById('todoList');
-  if(!list.length){ el.innerHTML='<div class="empty"><div class="ei">✅</div>TODO\u304c\u3042\u308a\u307e\u305b\u3093</div>'; return; }
+  if(!list.length){ el.innerHTML='<div class="empty"><div class="ei">✅</div>TODOがありません</div>'; return; }
   el.innerHTML='';
   list.forEach(function(t){
     var item=document.createElement('div'); item.className='todo-item'+(t.done?' done':'');
@@ -1366,8 +1366,8 @@ function renderTodo(){
       var diff2=(new Date(t.deadline).getTime()-now.getTime())/(86400000);
       dlText='📅 '+t.deadline;
       if(!t.done){
-        if(diff2<0){ dlClass+=' over'; dlText='⚠️ \u671f\u9650\u5207\u308c '+t.deadline; }
-        else if(diff2<=3){ dlClass+=' near'; dlText='⚡ \u3042\u3068'+Math.round(diff2)+'\u65e5'; }
+        if(diff2<0){ dlClass+=' over'; dlText='⚠️ 期限切れ '+t.deadline; }
+        else if(diff2<=3){ dlClass+=' near'; dlText='⚡ あと'+Math.round(diff2)+'日'; }
       }
     }
     var calB=t.showCal?'<span class="tcalbadge">📅</span>':'';
@@ -1385,7 +1385,7 @@ function renderTodo(){
 }
 function openAddTodo(editIdx){
   editTodoIdx=(editIdx!=null)?editIdx:null;
-  document.getElementById('todoMTitle').textContent=(editIdx!=null)?'TODO\u7de8\u96c6':'TODO\u8ffd\u52a0';
+  document.getElementById('todoMTitle').textContent=(editIdx!=null)?'TODO編集':'TODO追加';
   if(editIdx!=null){
     var t=todos[editIdx];
     document.getElementById('todoTitle').value=t.title||'';
@@ -1402,13 +1402,13 @@ function openAddTodo(editIdx){
 }
 function saveTodo(){
   var title=document.getElementById('todoTitle').value.trim();
-  if(!title){ alert('\u30bf\u30a4\u30c8\u30eb\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044'); return; }
+  if(!title){ alert('タイトルを入力してください'); return; }
   var entry={title:title,note:document.getElementById('todoNote').value.trim(),deadline:document.getElementById('todoDeadline').value,showCal:gton('togTCal'),done:(editTodoIdx!=null?todos[editTodoIdx].done:false),createdAt:(editTodoIdx!=null?todos[editTodoIdx].createdAt:Date.now())};
   if(editTodoIdx!=null) todos[editTodoIdx]=entry; else todos.push(entry);
   save(); cm('ovAddTodo'); renderTodo();
 }
 function togTodo(i){ todos[i].done=!todos[i].done; save(); renderTodo(); }
-function delTodo(i){ if(!confirm('\u524a\u9664\u3057\u307e\u3059\u304b\uff1f')) return; todos.splice(i,1); save(); renderTodo(); }
+function delTodo(i){ if(!confirm('削除しますか？')) return; todos.splice(i,1); save(); renderTodo(); }
 
 // =========================================
 //  COLOR PICKER
@@ -1452,19 +1452,19 @@ document.querySelectorAll('.ov').forEach(function(o){
 // =========================================
 if(!schTmpls.length){
   schTmpls=[
-    {name:'1\u76f4\uff08\u65e5\u52e4\uff09',start:'08:00',end:'17:00',color:'#4d8ef0'},
-    {name:'2\u76f4\uff08\u5915\u52e4\uff09',start:'17:00',end:'02:00',color:'#7a4df0'},
-    {name:'\u7761\u7720',start:'23:00',end:'07:00',color:'#f0d24d'},
-    {name:'\u671d\u306e\u30eb\u30fc\u30c6\u30a3\u30f3',start:'07:00',end:'08:00',color:'#4df09a'}
+    {name:'1直（日勤）',start:'08:00',end:'17:00',color:'#4d8ef0'},
+    {name:'2直（夕勤）',start:'17:00',end:'02:00',color:'#7a4df0'},
+    {name:'睡眠',start:'23:00',end:'07:00',color:'#f0d24d'},
+    {name:'朝のルーティン',start:'07:00',end:'08:00',color:'#4df09a'}
   ];
   save();
 }
 if(!studyTmpls.length){
   studyTmpls=[
-    {name:'\u96fb\u9a13\uff12\u7a2e\uff08\u7406\u8ad6\uff09',goalH:120,goalDate:'2026-09-01',color:'#4d8ef0'},
-    {name:'\u96fb\u9a13\uff12\u7a2e\uff08\u6cd5\u898f\uff09',goalH:80,goalDate:'2026-09-01',color:'#f0d24d'},
-    {name:'\u4ed5\u4e8b\u95a2\u9023',goalH:50,goalDate:'',color:'#4df09a'},
-    {name:'\u305d\u306e\u4ed6',goalH:20,goalDate:'',color:'#f07a4d'}
+    {name:'電験２種（理論）',goalH:120,goalDate:'2026-09-01',color:'#4d8ef0'},
+    {name:'電験２種（法規）',goalH:80,goalDate:'2026-09-01',color:'#f0d24d'},
+    {name:'仕事関連',goalH:50,goalDate:'',color:'#4df09a'},
+    {name:'その他',goalH:20,goalDate:'',color:'#f07a4d'}
   ];
   save();
 }
