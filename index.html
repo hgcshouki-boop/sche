@@ -8,9 +8,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Daily Ring">
 <meta name="theme-color" content="#0c0d12">
+<meta name="color-scheme" content="dark">
 <title>Daily Ring</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=DM+Mono:wght@300;400;500&display=swap');
+
+/* iOSのライトモード上書きを防ぐ */
+:root {
+color-scheme: dark;
+}
 
 :root {
 –bg: #0c0d12;
@@ -34,11 +40,16 @@
 }
 
 - { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html { height: 100%; height: -webkit-fill-available; }
+  html {
+  height: 100%;
+  height: -webkit-fill-available;
+  background: #0c0d12;
+  color-scheme: dark;
+  }
   body {
   font-family: ‘Noto Sans JP’, sans-serif;
-  background: var(–bg);
-  color: var(–txt);
+  background: #0c0d12 !important;
+  color: #e2e4ef;
   max-width: 480px;
   margin: 0 auto;
   display: flex;
@@ -46,6 +57,8 @@
   height: 100%;
   height: -webkit-fill-available;
   overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+  color-scheme: dark;
   }
 
 /* SCROLL BODY */
