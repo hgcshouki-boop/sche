@@ -3,7 +3,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Daily Ring">
@@ -198,20 +198,19 @@ transition: all .15s;
 /* MODAL */
 .ov {
 display: none; position: fixed; inset: 0;
-background: rgba(0,0,0,.8); z-index: 200;
+background: rgba(0,0,0,.75); z-index: 200;
 align-items: flex-end; justify-content: center;
-backdrop-filter: blur(8px);
--webkit-backdrop-filter: blur(8px);
 }
 .ov.on { display: flex; }
 .modal {
 width: 100%; max-width: 480px;
-background: var(–surf);
-border: 1px solid var(–brd);
+background: #1a1c26;
+border: 1px solid #32364a;
 border-radius: 20px 20px 0 0;
 padding: 20px 16px calc(28px + env(safe-area-inset-bottom));
 animation: su .25s cubic-bezier(.22,.68,0,1.15);
 max-height: 90vh; overflow-y: auto;
+position: relative; z-index: 201;
 }
 .modal::-webkit-scrollbar { display: none; }
 @keyframes su {
@@ -750,7 +749,18 @@ cursor: pointer; transition: border-color .15s;
 // =========================================
 //  CONSTANTS & STATE
 // =========================================
-const PAL = ['#4d8ef0','#f07a4d','#4df09a','#f0d24d','#9a4df0','#f04d6a','#4df0e0','#f0b84d','#a0f04d','#f04dc8'];
+const PAL = [
+  '#5b9cf6', // 青
+  '#f97b5a', // オレンジ
+  '#4ade9a', // 緑
+  '#fcd34d', // 黄
+  '#a78bfa', // 薄紫
+  '#f472b6', // ピンク
+  '#34d1f0', // シアン
+  '#fb923c', // 濃オレンジ
+  '#86efac', // ライトグリーン
+  '#c084fc', // 薄紫2
+];
 const DJ = ['\u65e5','\u6708','\u706b','\u6c34','\u6728','\u91d1','\u571f'];
 const HOL = {
   '2026-01-01':'\u5143\u65e5','2026-01-12':'\u6210\u4eba\u306e\u65e5',
@@ -847,7 +857,7 @@ function drawChart(){
   // bg
   var bg=document.createElementNS(ns,'circle');
   bg.setAttribute('cx',CX);bg.setAttribute('cy',CY);bg.setAttribute('r',OR);
-  bg.setAttribute('fill','#14151e'); svg.appendChild(bg);
+  bg.setAttribute('fill','#16182200'); svg.appendChild(bg);
 
   // ticks
   for(var h=0;h<24;h++){
@@ -857,7 +867,7 @@ function drawChart(){
     var ln=document.createElementNS(ns,'line');
     ln.setAttribute('x1',p1.x);ln.setAttribute('y1',p1.y);
     ln.setAttribute('x2',p2.x);ln.setAttribute('y2',p2.y);
-    ln.setAttribute('stroke',mj?'#2e3140':'#1e2030');
+    ln.setAttribute('stroke',mj?'#3a3d52':'#252833');
     ln.setAttribute('stroke-width',mj?'1.5':'1');
     svg.appendChild(ln);
     if(mj){
@@ -865,7 +875,7 @@ function drawChart(){
       var tx=document.createElementNS(ns,'text');
       tx.setAttribute('x',tp.x);tx.setAttribute('y',tp.y);
       tx.setAttribute('text-anchor','middle');tx.setAttribute('dominant-baseline','middle');
-      tx.setAttribute('font-size','6.5');tx.setAttribute('fill','#2e3140');
+      tx.setAttribute('font-size','6.5');tx.setAttribute('fill','#4a4e65');
       tx.setAttribute('font-family','DM Mono, monospace');tx.textContent=h;
       svg.appendChild(tx);
     }
@@ -875,7 +885,7 @@ function drawChart(){
   var rng=document.createElementNS(ns,'circle');
   rng.setAttribute('cx',CX);rng.setAttribute('cy',CY);
   rng.setAttribute('r',(OR+IR)/2);
-  rng.setAttribute('fill','none');rng.setAttribute('stroke','#1a1c26');
+  rng.setAttribute('fill','none');rng.setAttribute('stroke','#1e2030');
   rng.setAttribute('stroke-width',OR-IR); svg.appendChild(rng);
 
   // schedule arcs
@@ -897,7 +907,7 @@ function drawChart(){
       txt.setAttribute('x',mid.x);txt.setAttribute('y',mid.y);
       txt.setAttribute('text-anchor','middle');txt.setAttribute('dominant-baseline','middle');
       txt.setAttribute('font-size',sw>28?'8':'6');
-      txt.setAttribute('fill','rgba(0,0,0,0.8)');
+      txt.setAttribute('fill','rgba(255,255,255,0.9)');
       txt.setAttribute('font-family','Noto Sans JP, sans-serif');
       txt.setAttribute('font-weight','700');txt.setAttribute('pointer-events','none');
       var lbl=(s.name==='\u52c9\u5f37'&&s.studySubj)?s.studySubj:s.name;
@@ -915,11 +925,11 @@ function drawChart(){
     var nl=document.createElementNS(ns,'line');
     nl.setAttribute('x1',np1.x);nl.setAttribute('y1',np1.y);
     nl.setAttribute('x2',np2.x);nl.setAttribute('y2',np2.y);
-    nl.setAttribute('stroke','#4d8ef0');nl.setAttribute('stroke-width','2');
+    nl.setAttribute('stroke','#5b9cf6');nl.setAttribute('stroke-width','2.5');
     nl.setAttribute('stroke-linecap','round'); svg.appendChild(nl);
     var nd=document.createElementNS(ns,'circle');
     nd.setAttribute('cx',np1.x);nd.setAttribute('cy',np1.y);
-    nd.setAttribute('r','3');nd.setAttribute('fill','#4d8ef0');
+    nd.setAttribute('r','3.5');nd.setAttribute('fill','#5b9cf6');
     svg.appendChild(nd);
   }
 
