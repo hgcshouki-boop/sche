@@ -3,7 +3,11 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Daily Ring">
+<meta name="theme-color" content="#0a0b0f">
 <title>Daily Ring</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap');
@@ -15,14 +19,14 @@
   --r:13px;--r2:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;}
-body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);max-width:480px;margin:0 auto;display:flex;flex-direction:column;}
+html{height:100%;height:-webkit-fill-available;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--txt);max-width:480px;margin:0 auto;display:flex;flex-direction:column;height:100%;height:-webkit-fill-available;overflow:hidden;}
 /* ── LAYOUT ── */
-.app-body{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 14px 90px;position:relative;}
+.app-body{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 14px calc(80px + env(safe-area-inset-bottom));position:relative;-webkit-overflow-scrolling:touch;}
 .app-body::-webkit-scrollbar{width:3px;}
 .app-body::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:4px;}
 /* ── NAV ── */
-.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surf);border-top:1px solid var(--brd);display:flex;z-index:60;safe-area-inset-bottom:env(safe-area-inset-bottom);}
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surf);border-top:1px solid var(--brd);display:flex;z-index:60;padding-bottom:env(safe-area-inset-bottom);}
 .nb{flex:1;padding:9px 0 13px;background:none;border:none;color:var(--mut);font-size:8.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s;}
 .nb .ni{font-size:19px;line-height:1;}.nb.on{color:var(--acc);}
 /* ── PAGE ── */
@@ -442,11 +446,15 @@ textarea{resize:none;height:70px;font-size:12px;}
 <!-- ══════════ VOICE AI OVERLAY ══════════ -->
 
 <div class="voice-ov" id="voiceOv">
-  <div class="voice-circle" id="voiceCircle">🎙️</div>
-  <div class="voice-status" id="voiceStatus">タップして話しかける</div>
+  <div class="voice-circle" id="voiceCircle" onclick="startListening()">🎙️</div>
+  <div class="voice-status" id="voiceStatus">下のボタンを押して話しかける</div>
   <div class="voice-text" id="voiceText"></div>
   <div class="voice-resp" id="voiceResp"></div>
-  <button class="btn" style="margin-top:20px;" onclick="closeVoice()">閉じる</button>
+  <div style="display:flex;gap:12px;margin-top:20px;">
+    <button class="btn pri" id="voiceMicBtn" onclick="startListening()" style="flex:1;font-size:14px;padding:14px;">🎙️ 話す</button>
+    <button class="btn" id="voiceStopBtn" onclick="stopListening()" style="flex:1;font-size:14px;padding:14px;display:none;">⏹ 完了</button>
+  </div>
+  <button class="btn" style="margin-top:10px;width:100%;" onclick="closeVoice()">閉じる</button>
 </div>
 
 <script>
@@ -803,7 +811,18 @@ function renderDdTodo(k){
 function togMeal(k,type){
   if(!mealData[k])mealData[k]={morning:false,night:false};
   mealData[k][type]=!mealData[k][type];
-  save();renderDdMeal(k);renderCal();
+  // カレンダーの表示月をmealのkに合わせてから再描画
+  const[y,mo]=k.split('-').map(Number);
+  calY=y;calM=mo-1;
+  save();
+  renderCal();
+  // パネルを再表示（selCalDateが設定されている場合）
+  if(selCalDate&&dk(selCalDate)===k){
+    showDayDetail(selCalDate);
+  }else{
+    renderDdMeal(k);
+  }
+  updMonthlyCost();
 }
 function updMonthlyCost(){
   let mc=0,nc=0;
@@ -1080,7 +1099,12 @@ let isListening=false,recog=null,voiceConvHistory=[];
 function initRecog(){
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window))return null;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const r=new SR();r.lang='ja-JP';r.continuous=false;r.interimResults=false;return r;
+  const r=new SR();
+  r.lang='ja-JP';
+  r.continuous=false;
+  r.interimResults=true; // iOSでは途中結果も取得
+  r.maxAlternatives=1;
+  return r;
 }
 function toggleVoice(){
   if(document.getElementById('voiceOv').classList.contains('on')){
@@ -1089,43 +1113,84 @@ function toggleVoice(){
     document.getElementById('voiceOv').classList.add('on');
     document.getElementById('voiceText').textContent='';
     document.getElementById('voiceResp').textContent='';
-    document.getElementById('voiceStatus').textContent='🎙️ マイクボタンを押して話しかけてください';
+    document.getElementById('voiceStatus').textContent='🎙️ 「話す」ボタンを押してください';
+    document.getElementById('voiceMicBtn').style.display='flex';
+    document.getElementById('voiceStopBtn').style.display='none';
   }
 }
 function closeVoice(){
-  if(isListening&&recog)recog.stop();
+  if(isListening&&recog){try{recog.stop();}catch(e){}}
   isListening=false;
   document.getElementById('voiceOv').classList.remove('on');
   document.getElementById('voiceFab').classList.remove('listening');
   document.getElementById('voiceCircle').classList.remove('listening');
 }
-document.getElementById('voiceCircle').addEventListener('click',startListening);
+function stopListening(){
+  if(isListening&&recog){try{recog.stop();}catch(e){}}
+  isListening=false;
+  document.getElementById('voiceCircle').classList.remove('listening');
+  document.getElementById('voiceFab').classList.remove('listening');
+  document.getElementById('voiceMicBtn').style.display='flex';
+  document.getElementById('voiceStopBtn').style.display='none';
+  document.getElementById('voiceStatus').textContent='🤖 処理中...';
+}
 function startListening(){
-  if(isListening)return;
+  if(isListening){stopListening();return;}
   recog=initRecog();
-  if(!recog){document.getElementById('voiceStatus').textContent='⚠️ このブラウザは音声入力に対応していません';return;}
+  if(!recog){
+    document.getElementById('voiceStatus').textContent='⚠️ このブラウザは音声入力に非対応です。Safariをお使いください。';
+    return;
+  }
   isListening=true;
-  document.getElementById('voiceStatus').textContent='🔴 聴いています...';
+  document.getElementById('voiceStatus').textContent='🔴 聴いています... 話し終わったら「完了」を押してください';
   document.getElementById('voiceCircle').classList.add('listening');
   document.getElementById('voiceFab').classList.add('listening');
   document.getElementById('voiceText').textContent='';
+  document.getElementById('voiceResp').textContent='';
+  document.getElementById('voiceMicBtn').style.display='none';
+  document.getElementById('voiceStopBtn').style.display='flex';
+  let finalTranscript='';
   recog.onresult=e=>{
-    const transcript=e.results[0][0].transcript;
-    document.getElementById('voiceText').textContent='「'+transcript+'」';
-    processVoiceCommand(transcript);
+    let interim='';
+    finalTranscript='';
+    for(let i=0;i<e.results.length;i++){
+      if(e.results[i].isFinal)finalTranscript+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    document.getElementById('voiceText').textContent='「'+(finalTranscript||interim)+'」';
   };
-  recog.onerror=()=>{
-    isListening=false;document.getElementById('voiceCircle').classList.remove('listening');
+  recog.onerror=e=>{
+    isListening=false;
+    document.getElementById('voiceCircle').classList.remove('listening');
     document.getElementById('voiceFab').classList.remove('listening');
-    document.getElementById('voiceStatus').textContent='⚠️ 音声認識エラー。もう一度タップ';
+    document.getElementById('voiceMicBtn').style.display='flex';
+    document.getElementById('voiceStopBtn').style.display='none';
+    const msg=e.error==='not-allowed'?'⚠️ マイクの許可が必要です。Safariの設定でマイクを許可してください':
+              e.error==='no-speech'?'⚠️ 音声が検出されませんでした。もう一度お試しください':
+              '⚠️ エラー: '+e.error;
+    document.getElementById('voiceStatus').textContent=msg;
   };
   recog.onend=()=>{
-    isListening=false;document.getElementById('voiceCircle').classList.remove('listening');
+    isListening=false;
+    document.getElementById('voiceCircle').classList.remove('listening');
     document.getElementById('voiceFab').classList.remove('listening');
-    if(document.getElementById('voiceOv').classList.contains('on')&&!document.getElementById('voiceText').textContent)
-      document.getElementById('voiceStatus').textContent='👆 タップして話しかける';
+    document.getElementById('voiceMicBtn').style.display='flex';
+    document.getElementById('voiceStopBtn').style.display='none';
+    if(finalTranscript){
+      processVoiceCommand(finalTranscript);
+    }else{
+      const cur=document.getElementById('voiceText').textContent;
+      const txt=cur.replace(/^「|」$/g,'');
+      if(txt)processVoiceCommand(txt);
+      else document.getElementById('voiceStatus').textContent='音声を認識できませんでした。もう一度「話す」を押してください';
+    }
   };
-  recog.start();
+  try{recog.start();}catch(e){
+    isListening=false;
+    document.getElementById('voiceStatus').textContent='⚠️ 音声認識を開始できません: '+e.message;
+    document.getElementById('voiceMicBtn').style.display='flex';
+    document.getElementById('voiceStopBtn').style.display='none';
+  }
 }
 
 async function processVoiceCommand(text){
