@@ -115,14 +115,17 @@ textarea{resize:none;height:70px;font-size:12px;}
 .cdow{text-align:center;font-size:9px;color:var(–mut);padding:3px 0;font-family:‘DM Mono’,monospace;}
 .cdow:first-child{color:var(–red);}.cdow:last-child{color:var(–acc);}
 .ccell{min-height:54px;background:var(–card);border:1px solid var(–brd);border-radius:7px;padding:3px;cursor:pointer;transition:border-color .12s;display:flex;flex-direction:column;position:relative;}
-.ccell:hover{border-color:var(–brd2);}.ccell.today{border-color:var(–acc);}.ccell.sel{border-color:var(–acc);background:rgba(77,142,240,.1);}
+.ccell:hover{border-color:var(–brd2);}
+.ccell.today{border-color:var(–acc);background:rgba(77,142,240,.18);}
+.ccell.today .cnum{color:var(–acc);font-size:12px;}
+.ccell.sel{border-color:var(–acc);background:rgba(77,142,240,.12);box-shadow:0 0 0 1px var(–acc);}
 .ccell.om{opacity:.28;pointer-events:none;}.ccell.hol .cnum{color:var(–red);}.ccell.sat .cnum{color:var(–acc);}
 .cnum{font-size:10px;font-weight:700;line-height:1;margin-bottom:2px;}
 .cevs{display:flex;flex-direction:column;gap:1px;flex:1;}
 .cebar{font-size:7.5px;border-radius:2px;padding:1px 3px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#000;font-weight:700;}
-.mdots{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;}
-.mdot{width:5px;height:5px;border-radius:50%;}.mdot.mm{background:var(–meal-m);}.mdot.mn{background:var(–meal-n);}
-.todo-dot{width:5px;height:5px;border-radius:50%;border:1.5px solid var(–ylw);}
+.mdots{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;align-items:center;}
+.mdot{width:6px;height:6px;border-radius:50%;}.mdot.mm{background:var(–meal-m);}.mdot.mn{background:var(–meal-n);}
+.todo-dot{width:6px;height:6px;border-radius:50%;border:1.5px solid var(–ylw);}
 .todo-dot.done{background:var(–grn);border-color:var(–grn);}
 /* Day panel */
 .ddpanel{background:var(–card);border:1px solid var(–brd);border-radius:var(–r);padding:12px;margin-bottom:10px;display:none;}
@@ -155,13 +158,13 @@ textarea{resize:none;height:70px;font-size:12px;}
 .warn-card{background:rgba(240,77,106,.06);border:1px solid rgba(240,77,106,.2);border-radius:var(–r2);padding:10px 12px;font-size:11px;color:var(–red);margin-top:6px;line-height:1.6;}
 
 /* ═══════════════ TODO PAGE ═══════════════ */
-.todo-item{display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(–card);border:1px solid var(–brd);border-radius:var(–r);margin-bottom:7px;transition:opacity .2s;}
-.todo-item.done{opacity:.5;}
-.todo-check{width:20px;height:20px;border-radius:50%;border:2px solid var(–brd2);background:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;margin-top:1px;}
-.todo-check.done{background:var(–grn);border-color:var(–grn);color:#000;}
-.todo-body{flex:1;}
-.todo-title{font-size:13px;font-weight:700;margin-bottom:3px;}
-.todo-item.done .todo-title{text-decoration:line-through;color:var(–mut);}
+.todo-item{display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(–card);border:1px solid var(–brd);border-radius:var(–r);margin-bottom:7px;transition:all .2s;}
+.todo-item.done{border-color:var(–brd);background:rgba(255,255,255,.02);}
+.todo-check{width:22px;height:22px;border-radius:50%;border:2px solid var(–brd2);background:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;margin-top:1px;}
+.todo-check.done{background:var(–grn);border-color:var(–grn);color:#000;font-size:13px;}
+.todo-body{flex:1;min-width:0;}
+.todo-title{font-size:13px;font-weight:700;margin-bottom:3px;transition:all .2s;}
+.todo-item.done .todo-title{text-decoration:line-through;text-decoration-thickness:2px;color:var(–mut);font-weight:400;}
 .todo-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .todo-deadline{font-family:‘DM Mono’,monospace;font-size:10px;color:var(–mut);}
 .todo-deadline.near{color:var(–ylw);}.todo-deadline.over{color:var(–red);}
@@ -755,11 +758,19 @@ function renderCal(){
 function mkCell(date,om,today){
   const k=dk(date),cell=document.createElement('div');cell.className='ccell';
   if(om){cell.classList.add('om');return cell;}
-  if(date.getTime()===today.getTime())cell.classList.add('today');
+  const isToday=date.getTime()===today.getTime();
+  if(isToday)cell.classList.add('today');
   if(selCalDate&&date.getTime()===selCalDate.getTime())cell.classList.add('sel');
   if(HOL[k])cell.classList.add('hol');
   if(date.getDay()===6)cell.classList.add('sat');
-  const num=document.createElement('div');num.className='cnum';num.textContent=date.getDate();cell.appendChild(num);
+  const num=document.createElement('div');num.className='cnum';
+  if(isToday){
+    // 今日は丸バッジ付き
+    num.innerHTML=`<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--acc);color:#000;font-size:10px;font-weight:900;">${date.getDate()}</span>`;
+  }else{
+    num.textContent=date.getDate();
+  }
+  cell.appendChild(num);
   const evs=document.createElement('div');evs.className='cevs';
   (schData[k]||[]).filter(s=>s.showCal).slice(0,2).forEach(s=>{const b=document.createElement('div');b.className='cebar';b.style.background=s.color;b.textContent=s.name==='勉強'&&s.studySubj?s.studySubj:s.name;evs.appendChild(b);});
   if((schData[k]||[]).filter(s=>s.showCal).length>2){const m=document.createElement('div');m.style.cssText='font-size:7px;color:var(--mut);padding-left:2px;';m.textContent=`+${(schData[k]||[]).filter(s=>s.showCal).length-2}`;evs.appendChild(m);}
@@ -795,13 +806,22 @@ function gotoSchFromCal(){
 }
 function renderDdMeal(k){
   const meal=mealData[k]||{morning:false,night:false};
+  const cost=(meal.morning?310:0)+(meal.night?580:0);
   document.getElementById('ddMeal').innerHTML=`
-    <div class="mrow"><div class="micon">🌅</div><div class="minfo"><div class="mlabel">朝ごはん</div><div class="mprice">¥310</div></div>
-      <button class="mbtn ${meal.morning?'on-m':''}" onclick="togMeal('${k}','morning')">${meal.morning?'✓ 食べた':'未'}</button></div>
-    <div class="mrow"><div class="micon">🌙</div><div class="minfo"><div class="mlabel">夜ごはん</div><div class="mprice">¥580</div></div>
-      <button class="mbtn ${meal.night?'on-n':''}" onclick="togMeal('${k}','night')">${meal.night?'✓ 食べた':'未'}</button></div>
-    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mut);padding-top:7px;border-top:1px solid var(--brd);margin-top:3px;">
-      この日: <span style="color:var(--acc2);">¥${(meal.morning?310:0)+(meal.night?580:0)}</span></div>`;
+    <div class="mrow">
+      <div class="micon">🌅</div>
+      <div class="minfo"><div class="mlabel">朝ごはん</div><div class="mprice">¥310</div></div>
+      <button style="padding:7px 14px;border-radius:20px;border:1px solid ${meal.morning?'var(--meal-m)':'var(--brd)'};background:${meal.morning?'var(--meal-m)':'none'};color:${meal.morning?'#000':'var(--mut)'};font-size:12px;font-weight:${meal.morning?'700':'400'};cursor:pointer;transition:all .18s;font-family:inherit;" onclick="togMeal('${k}','morning')">${meal.morning?'✓ 食べた':'未'}</button>
+    </div>
+    <div class="mrow">
+      <div class="micon">🌙</div>
+      <div class="minfo"><div class="mlabel">夜ごはん</div><div class="mprice">¥580</div></div>
+      <button style="padding:7px 14px;border-radius:20px;border:1px solid ${meal.night?'var(--meal-n)':'var(--brd)'};background:${meal.night?'var(--meal-n)':'none'};color:${meal.night?'#fff':'var(--mut)'};font-size:12px;font-weight:${meal.night?'700':'400'};cursor:pointer;transition:all .18s;font-family:inherit;" onclick="togMeal('${k}','night')">${meal.night?'✓ 食べた':'未'}</button>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--mut);padding-top:8px;border-top:1px solid var(--brd);margin-top:4px;display:flex;justify-content:space-between;align-items:center;">
+      <span>この日の食費</span>
+      <span style="color:var(--acc2);font-size:14px;font-weight:700;">¥${cost}</span>
+    </div>`;
 }
 function renderDdTodo(k){
   const items=todos.filter(t=>t.deadline===k&&t.showCal);
@@ -1066,30 +1086,180 @@ async function extractAI(dataUrl){
   const b64=dataUrl.split(',')[1],mt=dataUrl.match(/data:([^;]+)/)[1];
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
-        system:`手書きメモからスケジュールを抽出。JSONのみ返答。
-{"schedules":[{"name":"予定名","start":"HH:MM","end":"HH:MM"}],"note":"補足"}
-24時間表記。読取不可の場合schedules:[]でnoteに理由。`,
-        messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:'スケジュールをJSONで抽出。'}]}]})});
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
+        system:`あなたはDaily Ringアプリ専用の手書きデータ抽出AIです。
+ユーザーが記入したDaily Ringテンプレート（またはその他の手書きメモ）から、以下の全データを抽出してください。
+JSONのみ返答。前置き・説明・マークダウン不要。
+
+{
+  "date": "YYYY-MM-DD または null",
+  "schedules": [
+    {"name": "予定名", "start": "HH:MM", "end": "HH:MM", "showCal": true}
+  ],
+  "study": [
+    {"subject": "科目名", "start": "HH:MM", "end": "HH:MM", "content": "学習内容"}
+  ],
+  "meals": {
+    "morning": true または false,
+    "night": true または false
+  },
+  "todos": [
+    {"title": "タスク名", "deadline": "YYYY-MM-DD または null", "showCal": true, "done": false}
+  ],
+  "note": "読み取れなかった場合の理由や補足"
+}
+
+抽出ルール:
+- テンプレートのSCHEDULEセクション: 時刻と予定名を読み取る
+- テンプレートのSTUDY LOGセクション: 科目・Start/End・Contentを読み取る
+- テンプレートのMEAL: 食べた/Ate にチェックがあればtrue
+- テンプレートのTODO LIST: タスク名・DUE DATE・Calチェックを読み取る
+- テンプレート以外の手書きメモも同様に解釈する
+- 時刻は24時間表記(HH:MM)で返す
+- 空欄・未記入はスキップ（配列に含めない）
+- 読み取れない場合はnoteに理由を記載しschedulesを[]にする`,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mt,data:b64}},
+          {type:'text',text:'このDaily Ringテンプレートまたは手書きメモから全データを抽出してJSONで返してください。'}
+        ]}]})});
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||'HTTP '+res.status);}
     const data=await res.json();
-    const text=data.content.map(i=>i.text||'').join('');
-    const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+    if(data.error)throw new Error(data.error.message);
+    const text=data.content.map(i=>i.text||'').join('').trim();
+    const jsonMatch=text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch)throw new Error('AI応答がJSON形式ではありません');
+    const parsed=JSON.parse(jsonMatch[0]);
     document.getElementById('aiSpin').style.display='none';
-    if(parsed.note){document.getElementById('aiNote').textContent=parsed.note;document.getElementById('aiNote').style.display='block';}
+
+    const el=document.getElementById('aiSchItems');
+    el.style.display='block';
+    el.innerHTML='';
+
+    // 日付情報
+    if(parsed.date){
+      const dEl=document.createElement('div');
+      dEl.style.cssText='font-size:11px;color:var(--acc);font-weight:700;margin:6px 0 10px;padding:7px 10px;background:rgba(77,142,240,.1);border-radius:8px;';
+      dEl.textContent='📅 抽出日付: '+parsed.date;
+      el.appendChild(dEl);
+    }
+
+    let hasData=false;
+
+    // 予定
     if(parsed.schedules?.length){
-      const el=document.getElementById('aiSchItems');el.style.display='block';
-      el.innerHTML='<div style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:1px;margin:8px 0 6px;">抽出された予定（タップで追加）</div>';
+      hasData=true;
+      addAISection(el,'📋 予定');
       parsed.schedules.forEach((s,i)=>{
-        const c=PAL[i%PAL.length];const item=document.createElement('div');item.className='aiitem';
-        item.innerHTML=`<div style="width:9px;height:9px;border-radius:50%;background:${c};flex-shrink:0;"></div><div style="flex:1;font-size:12px;font-weight:700;">${s.name}</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);">${s.start}〜${s.end}</div><div style="color:var(--acc);font-size:16px;">＋</div>`;
-        item.onclick=()=>{
-          const k=dk(selDate);if(!schData[k])schData[k]=[];
-          schData[k].push({name:s.name,start:s.start,end:s.end,color:c,showCal:true,studySubj:''});
-          save();drawChart();drawLegend();item.style.opacity='0.4';item.style.pointerEvents='none';item.querySelector('div:last-child').textContent='✓';
-        };el.appendChild(item);
+        const c=PAL[i%PAL.length];
+        addAIItem(el,c,s.name,s.start+'〜'+s.end,()=>{
+          const k=parsed.date||dk(selDate);
+          if(!schData[k])schData[k]=[];
+          schData[k].push({name:s.name,start:s.start,end:s.end,color:c,showCal:s.showCal!==false,studySubj:''});
+          save();drawChart();drawLegend();
+        });
       });
     }
-  }catch(err){document.getElementById('aiSpin').style.display='none';document.getElementById('aiNote').textContent='⚠️ '+err.message;document.getElementById('aiNote').style.display='block';}
+
+    // 勉強
+    if(parsed.study?.length){
+      hasData=true;
+      addAISection(el,'📚 勉強');
+      parsed.study.forEach((s,i)=>{
+        const c=PAL[(i+5)%PAL.length];
+        addAIItem(el,c,s.subject+(s.content?' / '+s.content.slice(0,15):''),s.start+'〜'+s.end,()=>{
+          const k=parsed.date||dk(selDate);
+          if(!schData[k])schData[k]=[];
+          schData[k].push({name:'勉強',start:s.start,end:s.end,color:c,showCal:true,studySubj:s.subject});
+          save();drawChart();drawLegend();
+        });
+      });
+    }
+
+    // 食事
+    if(parsed.meals&&(parsed.meals.morning||parsed.meals.night)){
+      hasData=true;
+      addAISection(el,'🍚 寮のごはん');
+      const mk=parsed.date||dk(selDate);
+      const mEl=document.createElement('div');
+      mEl.style.cssText='display:flex;gap:8px;margin-bottom:4px;';
+      if(parsed.meals.morning){
+        const b=document.createElement('button');
+        b.style.cssText='flex:1;padding:8px;border-radius:8px;border:1px solid var(--meal-m);background:rgba(240,192,77,.1);color:var(--meal-m);font-size:12px;cursor:pointer;font-family:inherit;';
+        b.textContent='🌅 朝ごはん 追加';
+        b.onclick=()=>{if(!mealData[mk])mealData[mk]={morning:false,night:false};mealData[mk].morning=true;save();b.textContent='✓ 追加済み';b.style.opacity='0.5';b.disabled=true;};
+        mEl.appendChild(b);
+      }
+      if(parsed.meals.night){
+        const b=document.createElement('button');
+        b.style.cssText='flex:1;padding:8px;border-radius:8px;border:1px solid var(--meal-n);background:rgba(122,77,240,.1);color:var(--meal-n);font-size:12px;cursor:pointer;font-family:inherit;';
+        b.textContent='🌙 夜ごはん 追加';
+        b.onclick=()=>{if(!mealData[mk])mealData[mk]={morning:false,night:false};mealData[mk].night=true;save();b.textContent='✓ 追加済み';b.style.opacity='0.5';b.disabled=true;};
+        mEl.appendChild(b);
+      }
+      el.appendChild(mEl);
+    }
+
+    // TODO
+    if(parsed.todos?.length){
+      hasData=true;
+      addAISection(el,'✅ TODO');
+      parsed.todos.forEach((t,i)=>{
+        addAIItem(el,'#f0d24d',t.title,t.deadline?'期限: '+t.deadline:'期限なし',()=>{
+          todos.push({title:t.title,note:'',deadline:t.deadline||'',showCal:t.showCal!==false,done:false,createdAt:Date.now()});
+          save();renderTodo();
+        });
+      });
+    }
+
+    if(!hasData){
+      const note=document.createElement('div');
+      note.style.cssText='font-size:12px;color:var(--mut);padding:12px;text-align:center;';
+      note.textContent=parsed.note||'データを読み取れませんでした。テンプレートに記入してから撮影してください。';
+      el.appendChild(note);
+    }
+
+    if(parsed.note&&hasData){
+      const n=document.createElement('div');
+      n.style.cssText='font-size:11px;color:var(--mut);padding:6px 8px;background:var(--bg);border-radius:6px;margin-top:6px;';
+      n.textContent='💬 '+parsed.note;
+      el.appendChild(n);
+    }
+
+    // 全て追加ボタン
+    if(hasData){
+      const allBtn=document.createElement('button');
+      allBtn.className='btn pri';
+      allBtn.style.cssText='width:100%;margin-top:10px;';
+      allBtn.textContent='✅ すべて追加する';
+      allBtn.onclick=()=>{
+        el.querySelectorAll('.aiitem').forEach(item=>item.click());
+        allBtn.textContent='✓ 追加済み';allBtn.disabled=true;allBtn.style.opacity='0.5';
+      };
+      el.appendChild(allBtn);
+    }
+
+  }catch(err){
+    document.getElementById('aiSpin').style.display='none';
+    document.getElementById('aiNote').textContent='⚠️ '+err.message;
+    document.getElementById('aiNote').style.display='block';
+  }
+}
+
+function addAISection(parent,label){
+  const d=document.createElement('div');
+  d.style.cssText='font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1.5px;margin:10px 0 5px;display:flex;align-items:center;gap:6px;';
+  d.innerHTML=`${label}<span style="flex:1;height:1px;background:var(--brd);display:inline-block;"></span>`;
+  parent.appendChild(d);
+}
+function addAIItem(parent,color,title,sub,onAdd){
+  const item=document.createElement('div');item.className='aiitem';
+  item.innerHTML=`<div style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;"></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;">${title}</div><div style="font-size:10px;color:var(--mut);font-family:'DM Mono',monospace;">${sub}</div></div><div style="color:var(--acc);font-size:16px;">＋</div>`;
+  item.onclick=()=>{
+    onAdd();
+    item.style.opacity='0.4';item.style.pointerEvents='none';
+    item.querySelector('div:last-child').textContent='✓';
+  };
+  parent.appendChild(item);
 }
 
 // ═══════════════════════════════════════════════════
@@ -1195,14 +1365,11 @@ function startListening(){
 
 async function processVoiceCommand(text){
   document.getElementById('voiceStatus').textContent='🤖 AI処理中...';
+  document.getElementById('voiceResp').textContent='';
   const systemPrompt=`あなたはスケジュール管理アプリ「Daily Ring」の音声AIアシスタントです。
-ユーザーの日本語の指示を解析し、以下のJSON形式で応答してください。マークダウン不要。
+ユーザーの日本語の指示を解析し、以下のJSON形式のみで応答してください。前置き・説明・マークダウン不要。JSONだけ返してください。
 
-{
-  "action": "アクション名",
-  "params": {},
-  "reply": "ユーザーへの返答（日本語・簡潔に）"
-}
+{"action":"アクション名","params":{},"reply":"ユーザーへの返答（日本語・簡潔に20字以内）"}
 
 利用可能なアクション:
 - navigate: ページ移動。params: {page: "sch"|"cal"|"study"|"todo"|"tmpl"}
@@ -1211,29 +1378,44 @@ async function processVoiceCommand(text){
 - show_today: 今日の予定を表示
 - show_study: 勉強状況確認
 - shift_date: 日付移動。params: {days: 数値（正=未来、負=過去）}
-- answer: 情報を答えるだけ。params: {}
+- answer: 質問に答えるだけ。params: {}
 
 今日の日付: ${dk(new Date())}
 現在表示中の日付: ${dk(selDate)}
 勉強科目: ${studyTmpls.map(t=>t.name).join(', ')||'未登録'}`;
 
   try{
-    voiceConvHistory.push({role:'user',content:text});
-    if(voiceConvHistory.length>10)voiceConvHistory=voiceConvHistory.slice(-10);
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:systemPrompt,
-        messages:voiceConvHistory})});
+    // 会話履歴はシンプルなuser/assistantのみ（systemは別途）
+    const messages=[{role:'user',content:text}];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:300,
+        system:systemPrompt,
+        messages:messages
+      })
+    });
+    if(!res.ok){
+      const errData=await res.json().catch(()=>({error:{message:'HTTP '+res.status}}));
+      throw new Error(errData.error?.message||'HTTP '+res.status);
+    }
     const data=await res.json();
-    const txt=data.content.map(i=>i.text||'').join('');
-    const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
-    voiceConvHistory.push({role:'assistant',content:txt});
-    document.getElementById('voiceResp').textContent=parsed.reply||'';
-    document.getElementById('voiceStatus').textContent='👆 タップして続ける';
+    if(data.error)throw new Error(data.error.message);
+    const txt=data.content.map(i=>i.text||'').join('').trim();
+    // JSON部分だけ抽出（前後の余分なテキストを除去）
+    const jsonMatch=txt.match(/\{[\s\S]*\}/);
+    if(!jsonMatch)throw new Error('AIの返答がJSON形式ではありません: '+txt.slice(0,80));
+    const parsed=JSON.parse(jsonMatch[0]);
+    document.getElementById('voiceResp').textContent=parsed.reply||'完了しました';
+    document.getElementById('voiceStatus').textContent='👆 続けて話すには「話す」を押してください';
     execVoiceAction(parsed);
     speak(parsed.reply);
   }catch(err){
-    document.getElementById('voiceResp').textContent='⚠️ エラー: '+err.message;
-    document.getElementById('voiceStatus').textContent='👆 タップして再試行';
+    console.error('Voice AI error:',err);
+    document.getElementById('voiceResp').textContent='';
+    document.getElementById('voiceStatus').textContent='⚠️ '+err.message;
   }
 }
 function execVoiceAction(cmd){
@@ -1261,11 +1443,11 @@ function speak(text){
 //  INIT
 // ═══════════════════════════════════════════════════
 if(!schTmpls.length){
-  schTmpls=[{name:'1直（日勤）',start:'08:00',end:'17:00',color:'#4d8ef0'},{name:'2直（夜勤）',start:'17:00',end:'02:00',color:'#7a4df0'},{name:'睡眠',start:'23:00',end:'07:00',color:'#f0d24d'},{name:'朝のルーティン',start:'07:00',end:'08:00',color:'#4df09a'}];
+  schTmpls=[{name:'1直（日勤）',start:'21:00',end:'08:00',color:'#4d8ef0'},{name:'2直（夜勤）',start:'08:00',end:'21:00',color:'#7a4df0'},{name:'睡眠',start:'23:00',end:'07:00',color:'#f0d24d'},{name:'朝のルーティン',start:'07:00',end:'08:00',color:'#4df09a'}];
   save();
 }
 if(!studyTmpls.length){
-  studyTmpls=[{name:'電験2種（理論）',goalH:120,goalDate:'2026-09-01',color:'#4d8ef0'},{name:'電験2種（法規）',goalH:80,goalDate:'2026-09-01',color:'#f0d24d'},{name:'仕事関連',goalH:50,goalDate:'',color:'#4df09a'},{name:'その他',goalH:20,goalDate:'',color:'#f07a4d'}];
+  studyTmpls=[{name:'電験2種（理論）',goalH:500,goalDate:'2026-08-30',color:'#4d8ef0'},{name:'電験2種（法規）',goalH:80,goalDate:'2026-08-30',color:'#f0d24d'},{name:'仕事関連',goalH:50,goalDate:'',color:'#4df09a'},{name:'その他',goalH:20,goalDate:'',color:'#f07a4d'}];
   save();
 }
 renderSchPage();
